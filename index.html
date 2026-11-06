@@ -19,7 +19,10 @@ const go=url=>location.replace(url+location.search+location.hash);
 const withTimeout=(p,ms)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),ms))]);
 (async()=>{
   try{
-    const {url}=await withTimeout(fetch('url.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()),5000);
+    // The GitHub API has the address the moment the host publishes it; the Pages copy lags a few minutes.
+    const fromApi=()=>fetch('https://api.github.com/repos/21035-ctrl/bridge/contents/url.json',{cache:'no-store',headers:{Accept:'application/vnd.github.raw+json'}}).then(r=>{if(!r.ok)throw 0;return r.json()});
+    const fromPages=()=>fetch('url.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json());
+    const {url}=await withTimeout(fromApi().catch(fromPages),5000);
     if(url){const ok=await withTimeout(fetch(url+'/api/ping',{cache:'no-store'}).then(r=>r.ok),6000);if(ok)return go(url);}
   }catch{}
   go(FALLBACK);
