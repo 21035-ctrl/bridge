@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ซ้อมบริดจ์</title>
+<style>
+  :root{color-scheme:light dark;--bg:#0f3d2e;--fg:#f4f1e8;--muted:#b9c7bf}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,"Noto Sans Thai",sans-serif;padding:16px;box-sizing:border-box}
+  p{margin:0;text-align:center}small{color:var(--muted)}a{color:inherit}
+</style>
+</head>
+<body>
+<p id="msg">กำลังเชื่อมต่อโต๊ะ…<br><small>ถ้ารอนาน <a href="https://keekiadbridge.onrender.com">เข้าเว็บสำรอง</a></small></p>
+<script>
+// Sends visitors to the server on the host computer when it is up, otherwise to the Render copy.
+const FALLBACK='https://keekiadbridge.onrender.com';
+const go=url=>location.replace(url+location.search+location.hash);
+const withTimeout=(p,ms)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),ms))]);
+(async()=>{
+  try{
+    const {url}=await withTimeout(fetch('url.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()),5000);
+    if(url){const ok=await withTimeout(fetch(url+'/api/ping',{cache:'no-store'}).then(r=>r.ok),6000);if(ok)return go(url);}
+  }catch{}
+  go(FALLBACK);
+})();
+</script>
+</body>
+</html>
